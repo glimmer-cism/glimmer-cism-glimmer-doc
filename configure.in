@@ -1,9 +1,9 @@
 dnl Process this file with autoconf to produce a configure script.
 
 dnl set version
-m4_define([glimmer_doc_major_version], [1])
-m4_define([glimmer_doc_minor_version], [0])
-m4_define([glimmer_doc_micro_version], [0])
+m4_define([glimmer_doc_major_version], [0])
+m4_define([glimmer_doc_minor_version], [5])
+m4_define([glimmer_doc_micro_version], [6])
 m4_define([glimmer_doc_version],
 	[glimmer_doc_major_version.glimmer_doc_minor_version.glimmer_doc_micro_version])
 
@@ -78,5 +78,5 @@ AC_SUBST(have_rsl_db)
 
 AC_CONFIG_FILES([Makefile doc/Makefile doc/common/Makefile doc/dg/Makefile doc/dg/figures/Makefile \
 		doc/ug/Makefile doc/ug/figs/Makefile doc/num/Makefile doc/num/figs/Makefile doc/num/gnu/Makefile \
-                doc/tg/Makefile doc/tg/figures/Makefile doc/tut/Makefile])
+                doc/tg/Makefile doc/tg/figures/Makefile])
 AC_OUTPUT([doc/glimmer.tex doc/common/version.tex doc/tg/rsl.tex])

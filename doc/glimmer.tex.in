@@ -4,8 +4,7 @@
 \frontmatter
 \title{GLIMMER {\glimmerver} Documentation}
 \author{Magnus Hagdorn\thanks{Magnus.Hagdorn@ed.ac.uk}, Ian
-  Rutt\thanks{I.C.Rutt@bristol.ac.uk}, Tony Payne\thanks{A.J.Payne@bristol.ac.uk} 
-  and Felix Hebeler\thanks{fhebeler@geo.unizh.ch}}
+  Rutt\thanks{I.C.Rutt@bristol.ac.uk} and Tony Payne\thanks{A.J.Payne@bristol.ac.uk}}
 \maketitle
 \tableofcontents
 
@@ -26,10 +25,6 @@
 \newcommand{\dir}{ug}
 \input{\dir/ug.tex}
 
-\chapter{Tutorial}
-\renewcommand{\dir}{tut}
-\input{\dir/tut.tex}
-
 \ifthenelse{\boolean{glimmertools}}
 {
 \chapter{PyCF Tools}
@@ -45,7 +40,6 @@
 \chapter{Developer Guide}
 \renewcommand{\dir}{dg}
 \input{\dir/dg.tex}
-
 
 \appendix
 \renewcommand{\dir}{ug}

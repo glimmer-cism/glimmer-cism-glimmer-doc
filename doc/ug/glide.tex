@@ -39,18 +39,10 @@ Sections and keys are case sensitive and may contain white space. However, the c
     \texttt{ewn} & (integer) number of nodes in $x$--direction\\
     \texttt{nsn} & (integer) number of nodes in $y$--direction\\
     \texttt{upn} & (integer) number of nodes in $z$--direction\\
-    \texttt{dew} & (real) node spacing in $x$--direction (m)\\
-    \texttt{dns} & (real) node spacing in $y$--direction (m)\\
-    \texttt{sigma\_file} & (string) Name of file containing $\sigma$ coordinates. Alternatively, the sigma levels may be specified using the \texttt{[sigma]} section decribed below. If no sigma coordinates are specified explicitly, they are calculated using the formula 
-    $$\sigma_i=\frac{1-(x_i+1)^{-n}}{1-2^{-n}}\quad\mbox{with}\quad x_i=\frac{\sigma_i-1}{\sigma_n-1}, n=2.$$ We should probably allow $n$ to be a run--time parameter.\\
-    \hline
-%%%% SIGMA
-    \hline
-    \multicolumn{2}{|l|}{\texttt{[sigma]}}\\
-    \hline
-    \multicolumn{2}{|p{0.95\textwidth}|}{Define the sigma levels used in the vertical discretization. This is an alternative to using a separate file (specified in section \texttt{[grid]} above). If neither is used, the levels are calculated as described above. \emph{\bf This does not work in version 1.0.0 --- a bugfix will be incorporated into v.1.0.2.}}\\
-    \hline
-    \texttt{sigma\_levels} & (real) list of sigma levels, in ascending order, separated by spaces. These run between 0.0 and 1.0 \\
+    \texttt{dew} & (real) node spacing in $x$--direction\\
+    \texttt{dns} & (real) node spacing in $y$--direction\\
+    \texttt{sigma\_file} & (string) Name of file containing $\sigma$ coordinates. The $\sigma$ coordinates are calculated if no file name is given using the formula 
+    $$\sigma_i=\frac{1-(x_i+1)^{-n}}{1-2^{-n}}\quad\mbox{with}\quad x_i=\frac{\sigma_i-1}{\sigma_n-1}, n=2$$ We should probably allow $n$ to be a run--time parameter.\\
     \hline
 %%%% TIME
     \hline
@@ -63,6 +55,7 @@ Sections and keys are case sensitive and may contain white space. However, the c
     \texttt{dt} & (real) size of time step in years\\
     \texttt{ntem} & (real) time step multiplier setting the ice temperature update interval\\
     \texttt{nvel} & (real) time step multiplier setting the velocity update interval\\
+    \texttt{niso} & (real) time step multiplier setting the isostasy update interval\\
     \hline
 %%%% Options
     \hline
@@ -82,6 +75,12 @@ Sections and keys are case sensitive and may contain white space. However, the c
       1 & Patterson and Budd (temp=-10degC)\\
       2 & const $10^{-16}$a$^{-1}$Pa$^{-n}$\\
     \end{tabular}\\
+    \texttt{sliding\_law} & 
+    \begin{tabular}[t]{cl}
+      0 & linear function of grav driving stress\\
+      $[1-3]$ & unknown \\
+      {\bf 4} & zero everywhere \\
+    \end{tabular}\\
     \texttt{basal\_water} & 
     \begin{tabular}[t]{cl}
       0 & local water balance\\
@@ -91,10 +90,9 @@ Sections and keys are case sensitive and may contain white space. However, the c
     \texttt{marine\_margin} & 
     \begin{tabular}[t]{cp{\linewidth}}
       0 & ignore marine margin\\
-      {\bf 1} & Set thickness to zero if floating\\
-      2 & Set thickness to zero if relaxed bedrock is below a given depth\\
+      {\bf 1} & Set thickness to zero if relaxed bedrock is more than certain water depth\\
+      2 & Set thickness to zero if floating\\
       3 & Lose fraction of ice when edge cell\\
-      4 & Set thickness to zero if present-day bedrock is below a given depth\\
     \end{tabular}\\
     \texttt{slip\_coeff} & 
     \begin{tabular}[t]{cl}
@@ -102,6 +100,13 @@ Sections and keys are case sensitive and may contain white space. However, the c
       1 & set to a non--zero constant everywhere\\
       2 & set constant where the ice base is melting\\
       0 & $\propto$ basal water\\
+    \end{tabular}\\
+    \texttt{stress\_calc} & 
+    \begin{tabular}[t]{cl}
+      0 & zeroth-order\\
+      1 & first-order\\
+      {\bf 2} & vertically-integrated first-order\\
+      3 & none\\
     \end{tabular}\\
     \texttt{evolution} & 
     \begin{tabular}[t]{cl}
@@ -118,8 +123,6 @@ Sections and keys are case sensitive and may contain white space. However, the c
     \begin{tabular}[t]{cp{\linewidth}}
       {\bf 0} & relaxed topography is read from a separate variable\\
       1 & first time slice of input topography is assumed to be relaxed\\
-      2 & first time slice of input topography is assumed to be in isostatic
-      equilibrium with ice thickness. \\
     \end{tabular}\\
     \texttt{periodic\_ew} & 
     \begin{tabular}[t]{cp{\linewidth}}
@@ -136,8 +139,8 @@ Sections and keys are case sensitive and may contain white space. However, the c
     \multicolumn{2}{|p{0.95\textwidth}|}{Set various parameters.}\\
     \hline
     \texttt{log\_level} & (integer) set to a value between 0, no messages, and 6, all messages are displayed to stdout. By default messages are only logged to file.\\
-    \texttt{ice\_limit} & (real) below this limit ice is only accumulated; ice dynamics are switched on once the ice thickness is above this value.\\
-    \texttt{marine\_limit} & (real) all ice is assumed lost once water depths reach this value (for \texttt{marine\_margin}=2 or 4 in \texttt{[options]} above). Note, water depth is negative. \\
+    \texttt{ice\_limit} & (real) below this limit ice is only accumulated, ice dynamics are switched on once the ice thickness is above this value.\\
+    \texttt{marine\_limit} & (real) all ice is assumed lost once water depths reach this value. Note, water depth is negative. \\
     \texttt{calving\_fraction} & (real) fraction of ice lost due to calving. \\
     \texttt{geothermal} & (real) constant geothermal heat flux.\\
     \texttt{flow\_factor} & (real) the flow law is enhanced with this factor \\
@@ -172,24 +175,6 @@ Sections and keys are case sensitive and may contain white space. However, the c
     \hline
 %%%%
     \hline
-    \multicolumn{2}{|l|}{\texttt{[projection]}}\\
-    \hline
-    \multicolumn{2}{|p{0.95\textwidth}|}{Specify map projection. The reader is
-    referred to Snyder J.P. (1987) \emph{Map Projections - a working manual.} USGS 
-        Professional Paper 1395. }\\
-    \hline
-    \texttt{type} & This is a string that specifies the projection type
-    (\texttt{LAEA}, \texttt{AEA}, \texttt{LCC} or \texttt{STERE}). \\
-    \texttt{centre\_longitude} & Central longitude in degrees east \\
-    \texttt{centre\_latitude} & Central latitude in degrees north \\
-    \texttt{false\_easting} & False easting in meters \\
-    \texttt{false\_northing} & False northing in meters \\
-    \texttt{standard\_parallel} & Location of standard parallel(s) in degrees
-    north. Up to two standard parallels may be specified (depending on the
-    projection). \\
-    \texttt{scale\_factor} & non-dimensional. Only relevant for the Stereographic projection.  \\
-%%%%
-    \hline
     \multicolumn{2}{|l|}{\texttt{[elastic lithosphere]}}\\
     \hline
     \multicolumn{2}{|p{0.95\textwidth}|}{Set up parameters of the elastic lithosphere.}\\
@@ -213,7 +198,7 @@ Sections and keys are case sensitive and may contain white space. However, the c
   \end{supertabular*}
 \end{center}
 
-NetCDF I/O can be configured in the main configuration file or in a separate file (see \texttt{ioparams} in the \texttt{[options]} section). Any number of input and output files can be specified. Input files are processed in the same order they occur in the configuration file, thus potentially overwriting priviously loaded fields.
+netCDF I/O can be configured in the main configuration file or in a separate file (see \texttt{ioparams} in the \texttt{[options]} section). Any number of input and output files can be specified. Input files are processed in the same order hey occur in the configuration file, thus potentially overwriting priviously loaded fields.
 
 \begin{center}
   \tablefirsthead{%
